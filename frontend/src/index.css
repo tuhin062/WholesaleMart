@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 210 20% 95%;
+        /* Slightly deeper ivory for better contrast with white cards */
+        --foreground: 222.2 47.4% 11.2%;
+
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 47.4% 11.2%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 47.4% 11.2%;
+
+        --primary: 221.2 83.2% 53.3%;
+        --primary-foreground: 210 40% 98%;
+
+        --secondary: 210 40% 96.1%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+
+        --accent: 221.2 83.2% 53.3%;
+        --accent-foreground: 210 40% 98%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 221.2 83.2% 53.3%;
+
+        --radius: 0.75rem;
+        /* Larger border radius for modern feel */
+
+        /* Custom Admin Colors */
+        --admin-sidebar: 222.2 47.4% 11.2%;
+        /* Deep dark sidebar */
+        --admin-sidebar-foreground: 210 40% 98%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased font-sans;
+    }
+}
+
+@layer utilities {
+    .glass {
+        @apply bg-white/10 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_#0000005e];
+    }
+
+    .glass-dark {
+        @apply bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+    }
+
+    /* Sleek Modern Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-slate-300 rounded-full border-4 border-solid border-transparent bg-clip-content hover:bg-slate-400 transition-colors;
+    }
+
+    /* Firefox */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+}
