@@ -1,40 +1,43 @@
 # WholesaleMart - Enterprise-Grade B2B Wholesale Platform
 
-A robust, enterprise-ready B2B grocery wholesale ordering platform. This application features separate, highly-polished portals for Admins and Retailers (Customers), built with a focus on clean architecture, type safety, and professional warehouse operations.
+**WholesaleMart** is a specialized, high-performance B2B platform designed for the **Indian Wholesale Market**. It bridges the gap between large distributors and local retailers with a premium, robust, and scalable technology stack.
+
+This document serves as the comprehensive technical guide for developers, architects, and stakeholders.
 
 ---
 
 ## 🚀 Key Architectural Highlights
 
-### 📦 Professional Order Workflow (Warehouse Ready)
-The system implements a sophisticated order management logic designed for real-world scenarios:
-- **Full Order Cancellation**: Atomic restocking of all items when an order is cancelled by the customer (pending only) or admin.
-- **Partial Cancellation (Damage Scenarios)**: Admins can cancel specific items if they are found damaged in the warehouse. These items are marked as loss and do **not** return to inventory.
-- **Item-Level Status Tracking**: Each order item moves through its own lifecycle (`active`, `cancelled`, `shipped`, `delivered`).
-- **Strict State Machine**: Enforces logical order progression: `pending` → `processing` → `partially_shipped` → `shipped` → `delivered`.
-- **Refund-Ready Data Modelling**: Dynamically calculates `total_fulfilled` and `total_refundable` amounts, derived from snapshots taken at order time.
+### 🇮🇳 Indian Market Localization
+The application is deeply customized for the Indian retail landscape:
+- **Currency**: All financial logic uses the **Indian Rupee (₹)**. Pricing, subtotals, and revenue stats are formatted to Indian standards.
+- **Identity**: The platform enforces a **+91 Mobile Number** identity for all retailers. Login flows and headers are hardcoded to this context.
+- **Design System**: "Ivory & Slate" aesthetics with a custom, sleek scrollbar (`index.css`) that provides a modern, premium feel suitable for high-value transactions.
 
-### 🍱 Secure Product Management
-- **Architectural Visibility**: Explicit separation of public catalogs (`/products/catalog/public`) and administrative management (`/products/manage/admin`).
-- **Status Normalization**: Strict server-side validation and normalization of product statuses ("active", "inactive").
-- **SKU Management**: Unique SKU enforcement for all products.
+### 📦 Professional Warehouse Workflow
+The system implements sophisticated order logic for real-world operations:
+- **Atomic Cancellation**: Full restocking when an order is cancelled by customer or admin.
+- **Damage Control**: Admin-only partial cancellation for damaged items (defines "loss" vs "restock").
+- **State Machine**: Enforces logical progression: `pending` → `processing` → `partially_shipped` → `shipped` → `delivered`.
+- **Refund Logic**: Dynamic calculation of `total_fulfilled` vs `total_refundable` based on snapshot data.
+
+### 🍱 Secure Product Context
+- **Explicit Visibility**: Separation of public catalogs (`/catalog/public`) and admin management (`/manage/admin`).
+- **Status Normalization**: Strict server-side validation for "active" vs "draft" states.
+- **Pessimistic Locking**: Prevents overselling during high-concurrency cart checkouts.
 
 ---
 
-## 🧰 Technology Stack
+## 🛠️ Technology Stack
 
-### Backend (Python/FastAPI)
-- **FastAPI**: Modern, high-performance web framework.
-- **SQLAlchemy 2.0**: Typed ORM for robust database interactions.
-- **PostgreSQL**: Production-grade relational database.
-- **JWT Authentication**: Secure, role-based access control.
-- **Pydantic V2**: Strict data validation and settings management.
-
-### Frontend (React/TypeScript)
-- **Vite + TypeScript**: Lean, type-safe development environment.
-- **Tailwind CSS + Shadcn UI**: Enterprise-grade, premium design system.
-- **Lucide React**: Beautiful, consistent iconography.
-- **Axios**: Interceptor-based API service layer for seamless auth handling.
+| Layer | Technology | Rationale |
+| :--- | :--- | :--- |
+| **Frontend** | React 18, Vite | Lightning-fast HMR and component-based UI. |
+| **Styling** | Tailwind CSS + Shadcn | Utility-first styling with premium accessibility. |
+| **Backend** | FastAPI (Python) | Async high-performance API with auto-generated docs. |
+| **Database** | SQLAuth (PostgreSQL) | Robust relational integrity and ACID transactions. |
+| **Auth** | JWT + OTP | Dual-strategy: Email/Pass for Admin, OTP for Retailers. |
+| **State** | Context API | Lightweight global state for Cart and Session. |
 
 ---
 
@@ -44,24 +47,42 @@ The system implements a sophisticated order management logic designed for real-w
 WholesaleMart/
 ├── backend/              # FastAPI Application
 │   ├── app/
-│   │   ├── core/         # Security, Dependencies, Config
-│   │   ├── models/       # SQLAlchemy (User, Product, Order)
-│   │   ├── schemas/      # Pydantic (Request/Response)
-│   │   ├── routers/      # API Routes (Auth, Products, Orders)
-│   │   └── database.py   # Connection & Session management
-│   ├── requirements.txt  # Python dependencies
-│   └── .env              # Configuration variables
+│   │   ├── core/         # Security, Config, Hashing
+│   │   ├── models/       # SQLAlchemy ORM (User, Product, Order)
+│   │   ├── schemas/      # Pydantic Validation Models
+│   │   ├── routers/      # API Endpoints (Auth, Products, Orders)
+│   │   └── services/     # Business Logic (Notification, Inventory)
+│   └── requirements.txt  # Python dependencies
 │
 └── frontend/             # React Application (TypeScript)
     ├── src/
-    │   ├── components/   # UI & Shared Components (Shadcn)
-    │   ├── pages/        # Admin/Retailer Views
-    │   ├── services/     # API interaction layer (axios)
-    │   ├── types/        # TypeScript interfaces
-    │   └── layouts/      # Layout wrappers (Sidebar, Dashboard)
-    ├── tailwind.config.js
-    └── tsconfig.json
+    │   ├── components/   # UI Atoms (Buttons, Cards, Inputs)
+    │   ├── pages/        # Route Views (Catalog, Dashboard)
+    │   ├── context/      # Global State (AuthContext, CartContext)
+    │   ├── services/     # Axios API Wrapper
+    │   └── layouts/      # Master Templates (Retailer, Admin)
+    └── tailwind.config.js
 ```
+
+---
+
+## 🔐 Authentication Ecosystem
+
+WholesaleMart uses a strategic dual-authentication mechanism:
+
+1.  **Admin Portal (Internal)**
+    *   **Method**: Email & Password.
+    *   **Access**: Full control over products, orders, and system settings.
+    *   **Route**: `/admin/login`
+
+2.  **Retailer Portal (Customer)**
+    *   **Method**: OTP (One-Time Password) login.
+    *   **Identity**: Mobile Number (+91).
+    *   **Flow**:
+        1.  User enters phone number (e.g., `7278936250`).
+        2.  System adds `+91` prefix.
+        3.  Standard OTP (`123456`) is used for verification (simulated).
+        4.  JWT Token issued with `role: customer`.
 
 ---
 
@@ -70,62 +91,57 @@ WholesaleMart/
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- PostgreSQL (ensure it's running locally)
+- PostgreSQL (Local or Cloud)
 
-### 1. Database Setup
-Create a database named `wholesalemart` in your PostgreSQL instance:
+### 1. Database Initialization
+Create a PostgreSQL database:
 ```sql
 CREATE DATABASE wholesalemart;
 ```
 
-### 2. Backend Configuration
-1. Navigate to `/backend`.
-2. Install dependencies: `pip install -r requirements.txt`.
-3. Configure `.env` (use `.env.example` as a template). Ensure `DATABASE_URL` is correct.
-4. Run the server: `uvicorn app.main:app --reload`.
-5. **Tables are created automatically** on first startup.
+### 2. Backend Setup
+1. `cd backend`
+2. `python -m venv venv`
+3. `source venv/bin/activate` (or `venv\Scripts\activate` on Windows)
+4. `pip install -r requirements.txt`
+5. Configure `.env` with your `DATABASE_URL`.
+6. Run server: `uvicorn app.main:app --reload`
+   *   *Tables are auto-created on startup.*
 
-### 3. Frontend Configuration
-1. Navigate to `/frontend`.
-2. Install dependencies: `npm install`.
-3. Run the development server: `npm run dev`.
-4. Access the app at `http://localhost:5173`.
-
----
-
-## 🔑 Use Cases & Flows
-
-### Admin Workflow
-1. **Login**: Authenticate at the Admin portal.
-2. **Product Control**: Toggle visibility, manage stock, and edit details with immediate backend normalization.
-3. **Order Management**: 
-   - View all orders system-wide.
-   - Advance order status through the strict state machine.
-   - Handle partial cancellations for damaged warehouse items.
-
-### Retailer Workflow
-1. **Easy Access**: Phone-based simulated OTP login.
-2. **Catalog Browsing**: Browse only "active" products in a high-performance grid.
-3. **Dynamic Ordering**: Build carts and place orders with real-time stock validation and pessimistic locking.
-4. **Order Tracking**: View detailed history with derived refund and fulfillment totals.
+### 3. Frontend Setup
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
+4. Application live at `http://localhost:5173`
 
 ---
 
 ## 📚 API Endpoints Summary
 
-- **Auth**: `POST /auth/login`, `POST /auth/otp/send`, `POST /auth/otp/verify`
-- **Products**: 
-  - `GET /products/catalog/public` (Public)
-  - `GET /products/manage/admin` (Admin)
-  - `PATCH /products/{id}/status` (Toggle)
-- **Orders**:
-  - `GET /orders/` (Role-based list)
-  - `GET /orders/{id}` (Detail)
-  - `POST /orders/{id}/cancel` (Full)
-  - `POST /orders/{id}/items/cancel` (Partial/Damage)
+### Authentication
+- `POST /auth/login`: Admin email/password login.
+- `POST /auth/otp/send`: Trigger OTP for retailer phone.
+- `POST /auth/otp/verify`: Exchange OTP for JWT.
+
+### Products
+- `GET /products/catalog/public`: Fetch active products (Retailer).
+- `GET /products/manage/admin`: Fetch all products (Admin).
+- `POST /products/`: Create new inventory item.
+- `PATCH /products/{id}/status`: Toggle Active/Draft status.
+
+### Orders
+- `GET /orders/`: Role-based order history.
+- `GET /orders/{id}`: Detailed view with line-item status.
+- `POST /orders/`: Create order from cart.
+- `POST /orders/{id}/cancel`: Full cancellation (Restock).
+- `POST /orders/{id}/items/cancel`: Partial cancellation (Damage/Loss).
 
 ---
 
-## 👨‍💻 Author
-**Your Name/Project Group**  
-WholesaleMart - Enterprise Solution
+## 🔮 Future Roadmap
+- [ ] **SMS Gateway**: Integration with Twilio/MSG91 for real OTPs.
+- [ ] **Inventory WebSockets**: Real-time stock decrement updates across clients.
+- [ ] **Invoice Generation**: PDF invoice generation for GST functionality.
+
+---
+**WholesaleMart** — *Redefining the Indian Wholesale Experience.*
